@@ -1,0 +1,15 @@
+- name: Build JAR
+  run: |
+    if [ -f backend/pom.xml ]; then
+      echo "Maven project detected in backend/"
+      cd backend && mvn clean package -DskipTests
+    elif [ -f backend/build.gradle ]; then
+      echo "Gradle project detected in backend/"
+      cd backend && gradle build -x test
+    else
+      echo "No build file found. Assuming pre-built JAR."
+      if [ ! -f app.jar ]; then
+        echo "Error: No app.jar found" >&2
+        exit 1
+      fi
+    fi
