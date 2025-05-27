@@ -1,0 +1,67 @@
+name: Build and Deploy to OpenShift
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Set up JDK for building the JAR file
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Build the JAR file (e.g., using Maven)
+      - name: Build JAR with Maven
+        run: mvn clean package -DskipTests
+
+      # Configure AWS credentials for S3 access
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Install OpenShift CLI (oc)
+      - name: Install oc CLI
+        run: |
+          curl -L https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz | tar -xz -C /usr/local/bin
+          oc version
+
+      # Log in to OpenShift
+      - name: Log in to OpenShift
+        run: |
+          oc login --token=${{ secrets.OPENSHIFT_TOKEN }} --server=${{ secrets.OPENSHIFT_SERVER }}
+
+      # Create or update OpenShift BuildConfig for S2I
+      - name: Create OpenShift BuildConfig
+        run: |
+          oc new-build registry.access.redhat.com/ubi8/openjdk-17~https://github.com/${{ github.repository }} \
+            --name=my-app \
+            --namespace=my-namespace \
+            --strategy=source \
+            --env=AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
+            --env=AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
+            --env=AWS_REGION=${{ secrets.AWS_REGION }}
+
+      # Start the S2I build
+      - name: Start S2I Build
+        run: |
+          oc start-build my-app --namespace=my-namespace --follow
+
+      # Deploy the application
+      - name: Deploy to OpenShift
+        run: |
+          oc new-app my-app --namespace=my-namespace || oc rollout latest dc/my-app --namespace=my-namespace
+          oc expose svc/my-app --namespace=my-namespace || true
