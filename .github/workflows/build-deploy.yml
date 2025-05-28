@@ -19,6 +19,6 @@ jobs:
           docker build ./front-end-nextjs/ -t abbysac/devops-qr-code-frontend:latest
       - name: push image to docker hub
         run: |
-          docker login -u abbysac -p ${{ secrets.DOCKEER_HUB_TOKEN }}
+          docker login -u abbysac -p ${{ secrets.DOCKEER_HUB_SECRET }}
           docker push abbysac/devops-qr-code-backend:latest
           docker push abbysac/devops-qr-code-frontend:latest
