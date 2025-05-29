@@ -27,7 +27,8 @@ jobs:
       - name: Download jar files from S3
         run: |
           mkdir s3-files
-          aws s3 cp s3://cca670-tickitdb/jar ./app/jar
+          aws s3 sync ./packages3.json s3://cca670-tickitdb/jar  
+        #./app/jar
     #   - name: Create Dockerfile
     #     run: |
     #       cat <<EOF > Dockerfile
