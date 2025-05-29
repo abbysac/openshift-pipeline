@@ -33,7 +33,7 @@ jobs:
       - name: Create temporary directory
         run: mkdir -p ./app
       - name: Download jar files from S3
-        run: aws s3 sync ./package.json s3://cca670-tickitdb/jar  
+        run: aws s3 sync /front-end-nextjs/package.json s3://cca670-tickitdb/jar  
             #./app/jar
 
     
