@@ -22,3 +22,13 @@ jobs:
           docker login -u abbysac -p ${{ secrets.DOCKEER_HUB_SECRET }}
           docker push abbysac/devops-qr-code-backend:latest
           docker push abbysac/devops-qr-code-frontend:latest
+      - name: Create temporary directory
+        run: mkdir -p ./app
+      - name: Download jar files from S3
+        run: |
+          mkdir s3-files
+          aws s3 cp s3://cca670-tickitdb/jar ./app/jar
+      - name: Build Docker Image
+        run: |
+          docker build -t docker push abbysac/devops-qr-code-backend:latest
+          docker push abbysac/devops-qr-code-frontend:latest 
