@@ -29,11 +29,15 @@ jobs:
     #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
     #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     #         aws-region: us-east-1
-
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::224761220970:role/GitHubActionsOIDCRole
+          aws-region: us-east-1
       - name: Create temporary directory
         run: mkdir -p ./app
       - name: Download jar files from S3
-        run: aws s3 cp ./front-end-nextjs s3://cca670-tickitdb/app/  
+        run: aws s3 cp ./front-end-nextjs s3://cca670-tickitdb/app/  --recursive
             #./app/jar
 
     
